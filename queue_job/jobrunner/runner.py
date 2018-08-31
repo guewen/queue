@@ -10,7 +10,7 @@ available Odoo workers
 How does it work?
 -----------------
 
-* It starts as a thread in the Odoo main process
+* It starts as a thread in the Odoo main process or as a new worker
 * It receives postgres NOTIFY messages each time jobs are
   added or updated in the queue_job table.
 * It maintains an in-memory priority queue of jobs that
@@ -155,6 +155,12 @@ ERROR_RECOVERY_DELAY = 5
 
 _logger = logging.getLogger(__name__)
 
+try:
+    import gevent
+    from gevent.pool import Pool
+except ImportError:
+    gevent = None
+    _logger.debug('gevent cannot be imported')
 
 session = requests.Session()
 
@@ -251,9 +257,16 @@ def _async_http_get(scheme, host, port, user, password, db_name, job_uuid):
             _logger.exception("exception in GET %s", url)
             session.cookies.clear()
             set_job_pending()
-    thread = threading.Thread(target=urlopen)
-    thread.daemon = True
-    thread.start()
+    if gevent:
+        _logger.info('using gevent for urlopen')
+        greenlet = gevent.spawn(urlopen)
+
+        # FIXME, we are waiting here, how not to wait? :)
+        gevent.joinall([greenlet])
+    else:
+        thread = threading.Thread(target=urlopen)
+        thread.daemon = True
+        thread.start()
 
 
 class Database(object):

@@ -4,6 +4,7 @@
 
 import logging
 from threading import Thread
+import signal
 import time
 
 from odoo.service import server
@@ -42,6 +43,13 @@ class WorkerJobRunner(server.Worker):
 
     def __init__(self, multi):
         super(WorkerJobRunner, self).__init__(multi)
+
+        import gevent
+        import gevent.monkey
+        gevent.monkey.patch_socket()
+
+        gevent.signal(signal.SIGQUIT, gevent.kill)
+
         self.watchdog_timeout = None
         self.runner = QueueJobRunner.from_environ_or_config()
 
