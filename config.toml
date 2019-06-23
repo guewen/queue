@@ -1,0 +1,207 @@
+baseURL = "https://oca.github.io/queue"
+languageCode = "en-us"
+title = "Odoo Job Queue"
+theme = "elate"
+
+pygmentsCodeFences = true
+pygmentsUseClasses = true
+
+[params]
+
+author = "OCA"
+description = ""
+email = ""
+custom_css = ["css/syntax.css"]
+
+  # Navigation
+  [params.navigation]
+    brand = "Odoo Job Queue"
+    intro = "<i class='icon-eye'></i>Intro"
+    work = "<i class='icon-camera'></i>Screenshots"
+    testimonials = "<i class='icon-bubbles'></i>Testimonials"
+    services = "<i class='icon-star'></i>Features"
+    about = "<i class='icon-bulb'></i>Use cases"
+    contact = "<i class='icon-envelope'></i> Contact"
+
+    # You can add custom links before or after the default links
+    # Assign a weight to define the order
+
+  # Hero section
+  [params.hero]
+    title = "<p>Odoo Job Queue</p>"
+    subtitle = '''
+A fast, reliable and effortless Queue for asynchronous Jobs.
+[![GitHub stars](https://img.shields.io/github/stars/oca/queue.svg?style=social&logo=github&label=Stars)](https://github.com/oca/queue)
+[![By OCA](https://img.shields.io/badge/by-oca-875A7B.svg)](https://www.odoo-community.org)
+[![By Camptocamp](https://img.shields.io/badge/by-camptocamp-fb7047.svg)](https://www.camptocamp.com)
+[![By Acsone](https://img.shields.io/badge/by-acsone-fb7047.svg)](https://www.acsone.eu)
+'''
+
+  # Available icons: https://iconify.design/icon-sets/simple-line-icons/
+  [params.intro]
+
+    [[params.intro.item]]
+      title = "Declare a method as job"
+      description = '''
+```python
+{{< highlight python >}}
+import base64
+from odoo import api, models
+from odoo.addons.queue_job.job import job
+
+
+class AccountInvoice(models.Model):
+    _inherit = 'account.invoice'
+
+    @job
+    @api.multi
+    def generate_report(self):
+        if not self.exists():
+            return
+        pdf = self.env['report'].get_pdf(self.ids, 'account.report_invoice')
+        self.write({
+            'sent': True,
+            'document': base64.b64encode(pdf)
+        })
+
+```
+'''
+
+    [[params.intro.item]]
+      title = "Delay the job, executed asynchronously"
+      description = '''
+```python3
+from odoo import api, models
+
+
+class AccountInvoice(models.Model):
+    _inherit = 'account.invoice'
+
+    @api.multi
+    def button_print(self):
+        self.with_delay().generate_report()
+
+```
+'''
+
+
+  # Screenshots section
+  [params.work]
+    enable = true
+    title = "Screenshots"
+    description = ""
+    footertext = ''
+
+    [[params.work.row]]
+      img = "screenshots/jobs.png"
+      alt = "Jobs View"
+      title = "Jobs View"
+      subtitle = "The jobs view shows every running job, their state, and allow to requeue them or see details about any errors."
+
+
+
+  # Testimonials section
+  [params.testimonials]
+    enable = true
+    title = "Testimonials"
+    description = ""
+
+    [[params.testimonials.item]]
+      quote = '''&ldquo;For sure queue_job is a must have from @OdooCommunity into the @Odoo ecosystem
+&rdquo; <br />
+	  <span class='subtext'><a href='https://twitter.com/acsonelmi/status/1065160364478869505'>21 Nov 2018</a></span>'''
+      person = 'Laurent Mignon<span class="subtext"><a href="https://twitter.com/acsonelmi" target="_blank"><i class="icon-social-twitter"></i> @acsonelmi</a></span>'
+      img = "https://pbs.twimg.com/profile_images/378800000343796823/ad038ccb84ba7706adda0d55bac3ece3_400x400.png"
+      alt = "Laurent Mignon"
+
+    [[params.testimonials.item]]
+      quote = '''&ldquo;I wish I could retweet this multiple times, for every time I've used this module.
+&rdquo; <br />
+	  <span class='subtext'><a href='https://twitter.com/RoelAdriaans/status/1064982420288606208'>20 Nov 2018</a></span>'''
+      person = 'Roel Adriaans<span class="subtext"><a href="https://twitter.com/RoelAdriaans" target="_blank"><i class="icon-social-twitter"></i> @RoelAdriaans</a></span>'
+      img = "https://pbs.twimg.com/profile_images/1104034854994395139/VqpMIeL4_400x400.png"
+      alt = "Roel Adriaans"
+
+
+  # Services section
+  [params.services]
+    enable = true
+    title = "Features"
+    description = "What makes the Job Queue a compulsory addon for large and not so large Odoo implementations."
+
+    [[params.services.item]]
+      title = "Channels"
+      description = "Different channels with a configurable number of concurrent workers for each allow to prevent bottlenecks."
+      icon = "icon-chart"
+
+    [[params.services.item]]
+      title = "Job Properties"
+      description = "Jobs have many properties for their scheduling: priority, channel, time of execution, patterns for retries, ..."
+      icon = "icon-speedometer"
+
+    [[params.services.item]]
+      title = "Plug-and-play"
+      description = "Simple Odoo addon, no need for another database engine."
+      icon = "icon-magic-wand"
+
+    [[params.services.item]]
+      title = "Blazing fast"
+      description = "Jobs are automatically started as soon as they are created."
+      icon = "icon-energy"
+
+    [[params.services.item]]
+      title = "Transactional"
+      description = "As the scheduling of jobs is in the same database, rollbacked transactions do not live out-of-context jobs."
+      icon = "icon-reload"
+
+    [[params.services.item]]
+      title = "Lovely API"
+      description = "Easy and nice API for developers. Delaying a job method is a no-brainer."
+      icon = "icon-game-controller"
+
+  # About section
+  [params.about]
+    enable = true
+    title = "Use cases"
+    description = "Some ideas and real life examples where it shines."
+
+    [[params.about.item]]
+      name = "Connectors"
+      position = "A must-have for connectors, where you want to support atomic synchronizations in background and handle their failures."
+      description = ""
+      img = ""
+      alt = "Connector"
+      social = [
+        ["icon-globe", "https://odoo-connector.com"],
+        ["icon-github", "https://github.com/oca/connector"]
+      ]
+
+    [[params.about.item]]
+      name = "Asynchronous import of files"
+      position = "Users don't want to wait while they import their CSV file. Good, it's done in background."
+      description = ""
+      img = ""
+      alt = "Connector"
+      social = [
+        ["icon-github", "https://github.com/OCA/queue/tree/12.0/base_import_async"]
+      ]
+
+    [[params.about.item]]
+      name = "Asynchronous export of files"
+      position = "You'll receive a link to download your file when it is ready!"
+      description = ""
+      img = ""
+      alt = "Connector"
+      social = [
+        ["icon-github", "https://github.com/OCA/queue/tree/12.0/base_export_async"]
+      ]
+
+  # Footer section
+  [params.footer]
+    enable = true
+    copyright = '[![Camptocamp](images/camptocamp.png)](https://www.camptocamp.com)'
+    links = [
+        ["icon-globe", "https://www.camptocamp.com"],
+        ["icon-twitter", "https://twitter.com/camptocamp"],
+        ["icon-github", "https://github.com/camptocamp"]
+      ]
