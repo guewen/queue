@@ -48,6 +48,7 @@ class QueueJob(models.Model):
     model_name = fields.Char(string='Model', readonly=True)
     method_name = fields.Char(readonly=True)
     record_ids = Serialized(readonly=True)
+    dependencies = Serialized(readonly=True)
     args = JobSerialized(readonly=True)
     kwargs = JobSerialized(readonly=True)
     func_string = fields.Char(string='Task', compute='_compute_func_string',
