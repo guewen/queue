@@ -164,11 +164,13 @@ class QueueJob(models.Model):
             job_ = Job.load(record.env, record.uuid)
             if state == DONE:
                 job_.set_done(result=result)
+                job_.store()
+                job_.enqueue_waiting()
             elif state == PENDING:
                 job_.set_pending(result=result)
+                job_.store()
             else:
                 raise ValueError('State not supported: %s' % state)
-            job_.store()
 
     @api.multi
     def button_done(self):

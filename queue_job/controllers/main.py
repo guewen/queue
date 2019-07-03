@@ -35,6 +35,9 @@ class RunJobController(http.Controller):
         env.cr.commit()
         _logger.debug('%s done', job)
 
+    def _enqueue_dependent_jobs(self, env, job):
+        job.enqueue_waiting()
+
     @http.route('/queue_job/session', type='http', auth="none")
     def session(self):
         """Used by the jobrunner to spawn a session
@@ -125,5 +128,7 @@ class RunJobController(http.Controller):
                     job.store()
                     new_cr.commit()
             raise
+
+        self._enqueue_dependent_jobs(env, job)
 
         return ""
