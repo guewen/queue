@@ -7,6 +7,7 @@ import os
 
 from odoo import models, api
 from ..job import DelayableRecordset
+from ..delay import Delayable
 
 _logger = logging.getLogger(__name__)
 
@@ -91,3 +92,14 @@ class Base(models.AbstractModel):
                                   description=description,
                                   channel=channel,
                                   identity_key=identity_key)
+
+    @api.multi
+    def delayable(self, priority=None, eta=None,
+                  max_retries=None, description=None,
+                  channel=None, identity_key=None):
+        return Delayable(self, priority=priority,
+                         eta=eta,
+                         max_retries=max_retries,
+                         description=description,
+                         channel=channel,
+                         identity_key=identity_key)
