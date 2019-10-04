@@ -18,7 +18,7 @@ repos:
     language_version: python3
   - id: flake8
     name: flake8 only __init__.py
-    args: [--ignore=E501 F401]  # ignore imported unused in __init__.py
+    args: [--ignore=E203 E501 W503 F401]  # ignore imported unused in __init__.py
     files: __init__.py
     language_version: python3
 - repo: https://github.com/pre-commit/mirrors-pylint
