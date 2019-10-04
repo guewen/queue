@@ -47,6 +47,11 @@ class Base(models.AbstractModel):
         When using :meth:``with_delay``, the final ``delay()`` is implicit.
         See the documentation of :meth:``delayable`` for more details.
         """
+        # TODO Implement this for ``delayable``. 2 options:
+        # 1. store the jobs in db, traverse the graph and process
+        # them in the same transaction
+        # 2. do not store them, instead, traverse the graph and
+        # execute the calls directly.
         if os.getenv('TEST_QUEUE_JOB_NO_DELAY'):
             _logger.warn(
                 '`TEST_QUEUE_JOB_NO_DELAY` env var found. NO JOB scheduled.'
