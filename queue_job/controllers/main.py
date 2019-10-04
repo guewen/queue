@@ -62,7 +62,7 @@ class RunJobController(http.Controller):
 
         # ensure the job to run is in the correct state and lock the record
         env.cr.execute(
-            "SELECT state FROM queue_job " "WHERE uuid=%s AND state=%s " "FOR UPDATE",
+            "SELECT state FROM queue_job WHERE uuid=%s AND state=%s FOR UPDATE",
             (job_uuid, ENQUEUED),
         )
         if not env.cr.fetchone():

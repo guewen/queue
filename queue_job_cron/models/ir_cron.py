@@ -12,7 +12,7 @@ class IrCron(models.Model):
     _inherit = "ir.cron"
 
     run_as_queue_job = fields.Boolean(
-        help="Specify if this cron should be " "ran as a queue job"
+        help="Specify if this cron should be ran as a queue job"
     )
     channel_id = fields.Many2one(
         comodel_name="queue.job.channel",

@@ -866,7 +866,7 @@ class ChannelManager(object):
             name = config_items[0]
             if not name:
                 raise ValueError(
-                    "Invalid channel config %s: " "missing channel name" % config_string
+                    "Invalid channel config %s: missing channel name" % config_string
                 )
             config["name"] = name
             if len(config_items) > 1:
@@ -1005,9 +1005,7 @@ class ChannelManager(object):
             channel = self.get_channel_by_name(channel_name)
         except ChannelNotFound:
             _logger.warning(
-                "unknown channel %s, " "using root channel for job %s",
-                channel_name,
-                uuid,
+                "unknown channel %s, using root channel for job %s", channel_name, uuid
             )
             channel = self._root_channel
         job = self._jobs_by_uuid.get(uuid)
