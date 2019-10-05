@@ -1,8 +1,4 @@
 [MASTER]
-profile=no
-ignore=CVS,.git,scenarios,.bzr
-persistent=yes
-cache-size=500
 load-plugins=pylint_odoo
 score=n
 
@@ -83,20 +79,4 @@ enable=anomalous-backslash-in-string,
 [REPORTS]
 msg-template={path}:{line}: [{msg_id}({symbol}), {obj}] {msg}
 output-format=colorized
-files-output=no
 reports=no
-evaluation=10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10)
-comment=no
-
-[FORMAT]
-indent-string='    '
-
-[SIMILARITIES]
-ignore-comments=yes
-ignore-docstrings=yes
-
-[MISCELLANEOUS]
-notes=
-
-[IMPORTS]
-deprecated-modules=pdb,pudb,ipdb,openerp.osv
