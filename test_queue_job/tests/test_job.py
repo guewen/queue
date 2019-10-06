@@ -8,6 +8,7 @@ import mock
 
 import odoo.tests.common as common
 from odoo import SUPERUSER_ID
+
 from odoo.addons.queue_job.exception import (
     FailedJobError,
     NoSuchJobError,

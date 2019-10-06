@@ -3,8 +3,9 @@
 
 import datetime
 
-from odoo.addons.queue_job.job import Job
 from odoo.tests import common
+
+from odoo.addons.queue_job.job import Job
 
 
 class TestQueueJobAutovacuumCronJob(common.TransactionCase):
