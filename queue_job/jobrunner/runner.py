@@ -141,11 +141,12 @@ import threading
 import time
 from contextlib import closing, contextmanager
 
-import odoo
 import psycopg2
 import requests
-from odoo.tools import config
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+
+import odoo
+from odoo.tools import config
 
 from . import queue_job_config
 from .channels import ENQUEUED, NOT_DONE, PENDING, ChannelManager

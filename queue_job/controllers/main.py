@@ -6,10 +6,11 @@ import logging
 import traceback
 from io import StringIO
 
+from psycopg2 import OperationalError
+
 import odoo
 from odoo import _, http, tools
 from odoo.service.model import PG_CONCURRENCY_ERRORS_TO_RETRY
-from psycopg2 import OperationalError
 
 from ..exception import FailedJobError, NothingToDoJob, RetryableJobError
 from ..job import ENQUEUED, Job

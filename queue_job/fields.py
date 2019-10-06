@@ -5,6 +5,7 @@ import json
 from datetime import date, datetime
 
 import dateutil
+
 from odoo import fields, models
 
 
