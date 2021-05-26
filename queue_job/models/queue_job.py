@@ -12,7 +12,7 @@ from odoo.osv import expression
 # * make everybody happy :
 from odoo.addons.base_sparse_field.models.fields import Serialized
 
-from ..job import STATES, DONE, PENDING, Job
+from ..job import STATES, DONE, PENDING, Job, WAIT_DEPENDENCIES
 from ..fields import JobSerialized
 from ..delay import Graph
 
@@ -227,12 +227,10 @@ class QueueJob(models.Model):
 
     @api.multi
     def requeue(self):
-        # FIXME if leaves are requeued before their done parents
-        # they will be pending instead of wait_dependencies
-        # (in a scenario where we select all the jobs and requeue them)
-        # Requeue them in reverse order of the graph? Or recheck the state
-        # after they are all updated.
-        self._change_job_state(PENDING)
+        jobs_to_requeue = self.filtered(
+            lambda job_: job_.state != WAIT_DEPENDENCIES
+        )
+        jobs_to_requeue._change_job_state(PENDING)
         return True
 
     def _message_post_on_failure(self):
