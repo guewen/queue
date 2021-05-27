@@ -113,9 +113,7 @@ class QueueJob(models.Model):
     )
     # FIXME the name of this field is very confusing
 
-    channel_method_name = fields.Char(readonly=True,
-                                      compute='_compute_job_function',
-                                      store=True)
+    channel_method_name = fields.Char(string="Method Name", readonly=True)
     job_function_id = fields.Many2one(comodel_name='queue.job.function',
                                       string='Job Function',
                                       readonly=True)
