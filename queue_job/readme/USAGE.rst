@@ -5,36 +5,8 @@ To use this module, you need to:
 Developers
 ~~~~~~~~~~
 
-**Bypass jobs on running Odoo**
-
-When you are developing (ie: connector modules) you might want
-to bypass the queue job and run your code immediately.
-
-To do so you can set `TEST_QUEUE_JOB_NO_DELAY=1` in your enviroment.
-
-**Bypass jobs in tests**
-
-When writing tests on job-related methods is always tricky to deal with
-delayed recordsets. To make your testing life easier
-you can set `test_queue_job_no_delay=True` in the context.
-
-Tip: you can do this at test case level like this
-
-.. code-block:: python
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.env = cls.env(context=dict(
-            cls.env.context,
-            test_queue_job_no_delay=True,  # no jobs thanks
-        ))
-
-Then all your tests execute the job methods synchronously
-without delaying any jobs.
-
 Delaying jobs
-~~~~~~~~~~~~~
+-------------
 
 The fast way to enqueue a job for a method is to use ``with_delay()`` on a record
 or model:
@@ -47,7 +19,7 @@ or model:
        self.write({"state": "done"})
        return True
 
-Here, the method ``print_confirmation_document`` will be executed asynchronously
+Here, the method ``print_confirmation_document()`` will be executed asynchronously
 as a job. ``with_delay()`` can take several parameters to define more precisely how
 the job is executed (priority, ...).
 
@@ -111,7 +83,7 @@ jobs of the group [B] are executed. The code would look like:
 
 .. code-block:: python
 
-   from odoo.addons.queue_job import group, chain
+   from odoo.addons.queue_job.delay import group, chain
 
    def button_done(self):
        group_a = group(self.delayable().method_foo(), self.delayable().method_bar())
@@ -141,20 +113,136 @@ Enqueing Job Options
 * identity_key: key uniquely identifying the job, if specified and a job with
   the same key has not yet been run, the new job will not be created
 
-
-Caveats
+Testing
 -------
 
-* TODO
+**Asserting enqueued jobs**
+
+The recommended way to test jobs, rather than running them directly and synchronously is to
+split the tests in two parts:
+
+ * one test where the job is mocked and the test only verifies that
+   the job has been delayed with the expected arguments
+ * one test that only calls the method of the job synchronously, to validate the
+   proper behavior of this method only
+
+Proceeding this way means that you can prove that jobs will be enqueued properly
+at runtime, and it ensures your code does not have a different behavior in tests
+and in production (because running your jobs synchronously may have a different
+behavior as they are in the same transaction / in the middle of the method).
+Additionally, it gives more control on the arguments you want to pass when
+calling the job's method (synchronously, this time, in the second type of
+tests), and it makes tests smaller.
+
+The best way to run such assertions on the enqueued jobs is to use
+``odoo.addons.queue_job.tests.common.mock_jobs()``.
+
+A very small example (more details in ``tests/common.py``):
+
+.. code-block:: python
+
+    # code
+    def my_job_method(self, name, count):
+        self.write({"name": " ".join([name] * count)
+
+    def method_to_test(self):
+        count = self.env["other.model"].search_count([])
+        self.with_delay(priority=15).my_job_method("Hi!", count=count)
+        return count
+
+    # tests
+    from odoo.addons.queue_job.tests.common import mock_jobs
+
+    # first test only check the expected behavior of the method and the proper
+    # enqueuing of jobs
+    def test_method_to_test(self):
+        with mock_jobs() as jobs_tester:
+            result = self.env["model"].method_to_test()
+            expected_count = 12
+
+            jobs_tester.assert_jobs_count(1, only=self.env["model"].my_job_method)
+            jobs_tester.assert_enqueued_job(
+                self.env["model"].my_job_method,
+                args=("Hi!",),
+                kwargs=dict(count=expected_count),
+                properties=dict(priority=15)
+            )
+            self.assertEqual(result, expected_count)
+
+
+     # second test to validate the behavior of the job unitarily
+     def test_my_job_method(self):
+         record = self.env["model"].browse(1)
+         record.my_job_method("Hi!", count=12)
+         self.assertEqual(record.name, "Hi! Hi! Hi! Hi! Hi! Hi! Hi! Hi! Hi! Hi! Hi! Hi!")
+
+If you prefer, you can still test the whole thing in a single test, by calling
+``jobs_tester.perform_enqueued_jobs()`` in your test.
+
+.. code-block:: python
+
+    def test_method_to_test(self):
+        with mock_jobs() as jobs_tester:
+            result = self.env["model"].method_to_test()
+            expected_count = 12
+
+            jobs_tester.assert_jobs_count(1, only=self.env["model"].my_job_method)
+            jobs_tester.assert_enqueued_job(
+                self.env["model"].my_job_method,
+                args=("Hi!",),
+                kwargs=dict(count=expected_count),
+                properties=dict(priority=15)
+            )
+            self.assertEqual(result, expected_count)
+
+            jobs_tester.perform_enqueued_jobs()
+
+            record = self.env["model"].browse(1)
+            record.my_job_method("Hi!", count=12)
+            self.assertEqual(record.name, "Hi! Hi! Hi! Hi! Hi! Hi! Hi! Hi! Hi! Hi! Hi! Hi!")
+
+**Execute jobs synchronously when running Odoo**
+
+When you are developing (ie: connector modules) you might want
+to bypass the queue job and run your code immediately.
+
+To do so you can set ``TEST_QUEUE_JOB_NO_DELAY=1`` in your environment.
+
+.. WARNING:: Do not do this in production
+
+**Execute jobs synchronously in tests**
+
+You should use ``mock_jobs``, really, but if for any reason you could not use it,
+and still need to have job methods executed synchronously in your tests, you can
+do so by setting ``test_queue_job_no_delay=True`` in the context.
+
+Tip: you can do this at test case level like this
+
+.. code-block:: python
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.env = cls.env(context=dict(
+            cls.env.context,
+            test_queue_job_no_delay=True,  # no jobs thanks
+        ))
+
+Then all your tests execute the job methods synchronously without delaying any
+jobs.
+
+.. NOTE:: in graphs of jobs, the ``test_queue_job_no_delay`` context key must be in at
+          least one job's env of the graph for the whole graph to be executed synchronously
+
 
 Tips and tricks
-~~~~~~~~~~~~~~~
+---------------
 
 * **Idempotency** (https://www.restapitutorial.com/lessons/idempotency.html): The queue_job should be idempotent so they can be retried several times without impact on the data.
 * **The job should test at the very beginning its relevance**: the moment the job will be executed is unknown by design. So the first task of a job should be to check if the related work is still relevant at the moment of the execution.
 
 Patterns
-~~~~~~~~
+--------
 Through the time, two main patterns emerged:
 
 1. For data exposed to users, a model should store the data and the model should be the creator of the job. The job is kept hidden from the users

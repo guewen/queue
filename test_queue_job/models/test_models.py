@@ -2,7 +2,8 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html)
 
 from odoo import api, fields, models
-from odoo.addons.queue_job.job import job, related_action
+from odoo.addons.queue_job.delay import chain
+from odoo.addons.queue_job.job import job, related_action, identity_exact
 from odoo.addons.queue_job.exception import RetryableJobError
 
 
@@ -51,6 +52,18 @@ class TestQueueJob(models.Model):
         return args, kwargs
 
     @job
+    def create_ir_logging(self, message, level="info"):
+        return self.env["ir.logging"].create({
+            "name": "test_queue_job",
+            "type": "server",
+            "dbname": self.env.cr.dbname,
+            "message": message,
+            "path": "job",
+            "func": "create_ir_logging",
+            "line": 1,
+        })
+
+    @job
     def no_description(self):
         return
 
@@ -71,6 +84,31 @@ class TestQueueJob(models.Model):
         mutable_arg.append(2)
         mutable_kwarg['b'] = 2
         return mutable_arg, mutable_kwarg
+
+    def button_that_uses_with_delay(self):
+        self.with_delay(
+            channel="root.test",
+            description="Test",
+            eta=15,
+            identity_key=identity_exact,
+            max_retries=1,
+            priority=15,
+        ).testing_method(1, foo=2)
+
+    def button_that_uses_delayable_chain(self):
+        delayables = chain(
+            self.delayable(
+                channel="root.test",
+                description="Test",
+                eta=15,
+                identity_key=identity_exact,
+                max_retries=1,
+                priority=15,
+            ).testing_method(1, foo=2),
+            self.delayable().testing_method('x', foo='y'),
+            self.delayable().no_description(),
+        )
+        delayables.delay()
 
 
 class TestQueueChannel(models.Model):
