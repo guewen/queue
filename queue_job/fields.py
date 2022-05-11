@@ -70,19 +70,17 @@ class JobEncoder(json.JSONEncoder):
     """Encode Odoo recordsets so that we can later recompose them"""
 
     def _get_record_context(self, obj):
-        context = obj.env.context.copy()
-        return context
+        return obj._job_prepare_context_before_enqueue()
 
     def default(self, obj):
         if isinstance(obj, models.BaseModel):
-            context = self._get_record_context(obj)
             return {
                 "_type": "odoo_recordset",
                 "model": obj._name,
                 "ids": obj.ids,
                 "uid": obj.env.uid,
                 "su": obj.env.su,
-                "context": context,
+                "context": self._get_record_context(obj),
             }
         elif isinstance(obj, datetime):
             return {"_type": "datetime_isoformat", "value": obj.isoformat()}
